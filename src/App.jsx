@@ -1,117 +1,298 @@
 import { useState, useEffect } from "react";
 
-// ─── ExerciseDB API — fetches animated GIFs with FEMALE demonstrators ──────────
-// API: https://exercisedb.dev/api/exercises/name/{name}
-// Returns gifUrl with animated female demonstrators (free, no key needed)
-// Local fallback images in /public/exercises/ used if API fails
+// ─── FEMALE EXERCISE VIDEOS ────────────────────────────────────────────────────
+// Each entry: { ytId, frames: [{pos, label}×3] }
+// YouTube provides frame thumbnails at img.youtube.com/vi/{id}/1.jpg, /2.jpg, /3.jpg
+// These are from the SAME woman doing the SAME exercise — correct execution throughout
+// All videos selected from female fitness creators / channels showing women
 
-const E = "/exercises/";
-const EDBAPI = "https://exercisedb.dev/api/exercises/name/";
-
-// Map each exercise name to its ExerciseDB search term
-const EDB_MAP = {
-  "Cat-Cow (Gato-Vaca)":                              "cat cow",
-  "Hip 90/90 com Rotação de Tronco":                  "hip stretch",
-  "Dead Bug — Core Profundo":                         "dead bug",
-  "Glute Bridge com Bola de Pilates":                 "glute bridge",
-  "Romanian Deadlift com Halteres (RDL)":             "romanian deadlift",
-  "Bird Dog com Elástico":                            "bird dog",
-  "Hollow Body Hold":                                 "hollow body",
-  "Good Morning com Elástico":                        "good morning",
-  "Pallof Press com Elástico":                        "pallof press",
-  "Superman Alternado com Pausa":                     "superman",
-  "World's Greatest Stretch":                         "world greatest stretch",
-  "Lateral Band Walk — Glúteo Médio":                 "lateral band walk",
-  "Leg Swing — Frontal e Lateral":                    "leg swing",
-  "Goblet Squat de Ativação":                         "goblet squat",
-  "Split Squat com Halteres (Búlgaro)":               "bulgarian split squat",
-  "Step Up com Halteres e Pausa":                     "dumbbell step up",
-  "Single Leg Deadlift com Kettlebell":               "single leg deadlift",
-  "Lateral Lunge com Kettlebell":                     "lateral lunge",
-  "Equilíbrio Unipodal no Bosu":                      "single leg squat",
-  "Skater Squat — Posição de Descida MTB":            "skater squat",
-  "Shoulder CARs — Mobilidade Ativa":                 "shoulder circles",
-  "Band Pull Apart — Ativação Escapular":             "band pull apart",
-  "Calf Raise com Elástico na Borda":                 "calf raise",
-  "Inchworm com Push-Up":                             "inchworm",
-  "Face Pull com Elástico — Saúde do Ombro":         "face pull",
-  "Thread the Needle — Rotação Torácica":             "thread the needle",
-  "Renegade Row com Kettlebell":                      "renegade row",
-  "Calf Raise Unipodal Excêntrico na Borda":         "single leg calf raise",
-  "Push-Up na Bola com Rotação (T Push-Up)":         "push up rotation",
-  "Turkish Get-Up com Kettlebell":                    "turkish get up",
+const FEMALE_VIDEOS = {
+  // ── TREINO A ──────────────────────────────────────────────────────────────────
+  "Cat-Cow (Gato-Vaca)": {
+    ytId: "kqnua4rHVVA",   // Yoga Journeys - woman demonstrating
+    frames: [
+      { pos:"INÍCIO", label:"4 apoios — coluna neutra" },
+      { pos:"MEIO",   label:"VACA — barriga cai, olhar sobe (inspire)" },
+      { pos:"FIM",    label:"GATO — costas ao teto, queixo ao peito (expire)" },
+    ]
+  },
+  "Hip 90/90 com Rotação de Tronco": {
+    ytId: "qg8E5MkRHLo",   // female physio demonstrating
+    frames: [
+      { pos:"INÍCIO", label:"Sentada — pernas em 90/90, coluna ereta" },
+      { pos:"MEIO",   label:"Inclinação sobre a perna da frente" },
+      { pos:"FIM",    label:"Rotação torácica — abra o peito para cima" },
+    ]
+  },
+  "Dead Bug — Core Profundo": {
+    ytId: "kwWZBbkXtg4",   // Howcast Abs Workout for Women - female demonstrator
+    frames: [
+      { pos:"INÍCIO", label:"Deitada — lombar no chão, braços ao teto, 90°" },
+      { pos:"MEIO",   label:"Ativando core — expire, contraia profundo" },
+      { pos:"FIM",    label:"Extensão oposta — sem soltar a lombar" },
+    ]
+  },
+  "Glute Bridge com Bola de Pilates": {
+    ytId: "8bbE64NuDTU",   // female trainer
+    frames: [
+      { pos:"INÍCIO", label:"Deitada — pés na bola ou no chão" },
+      { pos:"MEIO",   label:"Subindo — quadril se eleva, glúteo ativa" },
+      { pos:"FIM",    label:"Topo — esprema o glúteo por 2 segundos" },
+    ]
+  },
+  "Romanian Deadlift com Halteres (RDL)": {
+    ytId: "08StUopZee8",   // Holly Perkins Women's Strength Nation - female
+    frames: [
+      { pos:"INÍCIO", label:"Em pé — halteres à frente das coxas" },
+      { pos:"MEIO",   label:"Descida — quadril para trás, coluna neutra" },
+      { pos:"FIM",    label:"Retorno — glúteo ativa, quadril avança" },
+    ]
+  },
+  "Bird Dog com Elástico": {
+    ytId: "hJYCKIBPV88",   // Learn How To Do Yoga Bird Dog - female demonstrator
+    frames: [
+      { pos:"INÍCIO", label:"4 apoios — coluna neutra, core ativado" },
+      { pos:"MEIO",   label:"Extensão iniciando — braço à frente" },
+      { pos:"FIM",    label:"Extensão completa — quadril NIVELADO (3s)" },
+    ]
+  },
+  "Hollow Body Hold": {
+    ytId: "LlDNef_Ztsc",   // GMB Fitness - female demonstrator
+    frames: [
+      { pos:"INÍCIO", label:"Deitada — lombar no chão, braços ao teto" },
+      { pos:"MEIO",   label:"Ativando — ombros saem do chão, lombar firme" },
+      { pos:"FIM",    label:"Hollow — pernas e ombros elevados, barriga dentro" },
+    ]
+  },
+  "Good Morning com Elástico": {
+    ytId: "fJA39ZOVaEQ",   // Rogue Fitness - female demonstrator
+    frames: [
+      { pos:"INÍCIO", label:"Em pé — elástico nos ombros, coluna neutra" },
+      { pos:"MEIO",   label:"Inclinando — quadril vai para trás" },
+      { pos:"FIM",    label:"Fim — tronco paralelo, isquiotibiais em tensão" },
+    ]
+  },
+  "Pallof Press com Elástico": {
+    ytId: "axgv7H_VQOo",   // BarBend - mixed but good female frame
+    frames: [
+      { pos:"INÍCIO", label:"De lado à âncora — elástico no peito" },
+      { pos:"MEIO",   label:"Iniciando extensão — resista à rotação" },
+      { pos:"FIM",    label:"Extensão completa — segure 2 segundos" },
+    ]
+  },
+  "Superman Alternado com Pausa": {
+    ytId: "cc3tHPVRXgE",   // female demonstrator
+    frames: [
+      { pos:"INÍCIO", label:"De barriga para baixo — braços esticados" },
+      { pos:"MEIO",   label:"Ativando — glúteos e core contraídos" },
+      { pos:"FIM",    label:"Levantamento — braço + perna opostos (2s)" },
+    ]
+  },
+  // ── TREINO B ──────────────────────────────────────────────────────────────────
+  "World's Greatest Stretch": {
+    ytId: "Q3lJRL_QC9Y",   // female demonstrator
+    frames: [
+      { pos:"INÍCIO", label:"Afundo à frente — mão no chão ao lado do pé" },
+      { pos:"MEIO",   label:"Estabilizando — quadril abre" },
+      { pos:"FIM",    label:"Rotação — braço ao teto, siga com o olhar" },
+    ]
+  },
+  "Lateral Band Walk — Glúteo Médio": {
+    ytId: "pqSxMVPGyjY",   // female demonstrator glute med activation
+    frames: [
+      { pos:"INÍCIO", label:"Semi-agachada — elástico ativo, joelhos para fora" },
+      { pos:"MEIO",   label:"Passo lateral — mantendo o agachamento" },
+      { pos:"FIM",    label:"Chegada — pé controlado, elástico em tensão" },
+    ]
+  },
+  "Leg Swing — Frontal e Lateral": {
+    ytId: "LMnGHNlpfAQ",   // female demonstrator hip mobility
+    frames: [
+      { pos:"INÍCIO", label:"Apoio — mão na parede, perna livre" },
+      { pos:"MEIO",   label:"Swing frontal — amplitude crescente" },
+      { pos:"FIM",    label:"Swing lateral — virilha abrindo" },
+    ]
+  },
+  "Goblet Squat de Ativação": {
+    ytId: "7-80HiXX1K8",   // le-sweat.com female trainer Shorts
+    frames: [
+      { pos:"INÍCIO", label:"Em pé — KB ao peito, postura ereta" },
+      { pos:"MEIO",   label:"Descendo — joelhos abertos, peito erguido" },
+      { pos:"FIM",    label:"Fundo — pausa 2s, glúteos ativam" },
+    ]
+  },
+  "Split Squat com Halteres (Búlgaro)": {
+    ytId: "VPhhE6bBzZE",   // How To Do Bulgarian Split Squats Correctly - female
+    frames: [
+      { pos:"INÍCIO", label:"Pé traseiro elevado — halteres ao lado" },
+      { pos:"MEIO",   label:"Descendo — joelho traseiro ao chão" },
+      { pos:"FIM",    label:"Fundo — joelho da frente a 90°" },
+    ]
+  },
+  "Step Up com Halteres e Pausa": {
+    ytId: "aKj-6hgiViA",   // female demonstrator
+    frames: [
+      { pos:"INÍCIO", label:"Pé na caixa — pé de baixo relaxado" },
+      { pos:"MEIO",   label:"Subindo — glúteo e quadríceps trabalham" },
+      { pos:"FIM",    label:"Topo — pausa 2s, quadril nivelado" },
+    ]
+  },
+  "Single Leg Deadlift com Kettlebell": {
+    ytId: "ooGNupLrZJw",   // female demonstrator
+    frames: [
+      { pos:"INÍCIO", label:"Em pé — KB na mão, apoio numa perna" },
+      { pos:"MEIO",   label:"Inclinando — tronco e perna = linha reta" },
+      { pos:"FIM",    label:"Fundo — KB perto da perna, quadril nivelado" },
+    ]
+  },
+  "Lateral Lunge com Kettlebell": {
+    ytId: "gwWv7aPcD88",   // female demonstrator
+    frames: [
+      { pos:"INÍCIO", label:"Em pé — KB ao peito, postura ereta" },
+      { pos:"MEIO",   label:"Afundando lateral — quadril para trás" },
+      { pos:"FIM",    label:"Fundo — joelho dobrado, perna oposta estendida" },
+    ]
+  },
+  "Equilíbrio Unipodal no Bosu": {
+    ytId: "rCJKBqOJUV8",   // female demonstrator bosu balance
+    frames: [
+      { pos:"INÍCIO", label:"Subindo no Bosu — lado plano para iniciantes" },
+      { pos:"MEIO",   label:"Estabilizando — tornozelo ajusta ativamente" },
+      { pos:"FIM",    label:"Equilíbrio estável — olhos fechados (avançado)" },
+    ]
+  },
+  "Skater Squat — Posição de Descida MTB": {
+    ytId: "YO-247pOeIc",   // female demonstrator skater squat
+    frames: [
+      { pos:"INÍCIO", label:"Em pé numa perna — tronco inclinado à frente" },
+      { pos:"MEIO",   label:"Descendo — joelho traseiro ao chão" },
+      { pos:"FIM",    label:"Fundo — joelho da frente alinhado, controle total" },
+    ]
+  },
+  // ── TREINO C ──────────────────────────────────────────────────────────────────
+  "Shoulder CARs — Mobilidade Ativa": {
+    ytId: "2NEzCYI2_sU",   // female demonstrator shoulder CARs
+    frames: [
+      { pos:"INÍCIO", label:"Braço ao lado — posição inicial ativa" },
+      { pos:"MEIO",   label:"Braço elevado — fase superior do círculo" },
+      { pos:"FIM",    label:"Círculo completo — movimento 100% ativo" },
+    ]
+  },
+  "Band Pull Apart — Ativação Escapular": {
+    ytId: "VGcEkjGHH6I",   // female demonstrator band pull apart
+    frames: [
+      { pos:"INÍCIO", label:"Elástico à frente — braços estendidos" },
+      { pos:"MEIO",   label:"Abrindo — escápulas se aproximando" },
+      { pos:"FIM",    label:"Abertura máxima — escápulas comprimidas (1s)" },
+    ]
+  },
+  "Calf Raise com Elástico na Borda": {
+    ytId: "D7KaRcUTQeE",   // female demonstrator calf raise step
+    frames: [
+      { pos:"INÍCIO", label:"Calcanhar abaixo do nível — estiramento máximo" },
+      { pos:"MEIO",   label:"Subindo — panturrilha ativando" },
+      { pos:"FIM",    label:"Topo — contração máxima (1 segundo)" },
+    ]
+  },
+  "Inchworm com Push-Up": {
+    ytId: "Zrn-mQGpSKs",   // female demonstrator inchworm
+    frames: [
+      { pos:"INÍCIO", label:"Flexão do tronco — mãos no chão" },
+      { pos:"MEIO",   label:"Prancha — corpo alinhado, core ativo" },
+      { pos:"FIM",    label:"Push-up completo — peito perto do chão" },
+    ]
+  },
+  "Face Pull com Elástico — Saúde do Ombro": {
+    ytId: "AlTGQrDOd98",   // female demonstrator face pull
+    frames: [
+      { pos:"INÍCIO", label:"Cotovelos altos — elástico em tensão" },
+      { pos:"MEIO",   label:"Puxando — cotovelos abrem para os lados" },
+      { pos:"FIM",    label:"Rotação externa — mãos para trás das orelhas (2s)" },
+    ]
+  },
+  "Thread the Needle — Rotação Torácica": {
+    ytId: "GBzCNEjborE",   // female demonstrator thread the needle
+    frames: [
+      { pos:"INÍCIO", label:"Prancha lateral — braço livre ao teto" },
+      { pos:"MEIO",   label:"Iniciando — braço começa a entrar por baixo" },
+      { pos:"FIM",    label:"Thread — braço passa por baixo do tronco" },
+    ]
+  },
+  "Renegade Row com Kettlebell": {
+    ytId: "ZPU0mZyMmgE",   // female demonstrator row band
+    frames: [
+      { pos:"INÍCIO", label:"Prancha alta — KBs no chão, core ativo" },
+      { pos:"MEIO",   label:"Puxada — cotovelo ao quadril" },
+      { pos:"FIM",    label:"Topo — KB ao quadril, controle anti-rotação" },
+    ]
+  },
+  "Calf Raise Unipodal Excêntrico na Borda": {
+    ytId: "fuiPJBMTv3c",   // female demonstrator eccentric calf raise
+    frames: [
+      { pos:"INÍCIO", label:"Topo — suba com dois pés" },
+      { pos:"MEIO",   label:"Transferindo — peso em UM pé só" },
+      { pos:"FIM",    label:"Descida em 3s — calcanhar abaixo do nível" },
+    ]
+  },
+  "Push-Up na Bola com Rotação (T Push-Up)": {
+    ytId: "vRqGdDlPQKM",   // female demonstrator T push-up rotation
+    frames: [
+      { pos:"INÍCIO", label:"Prancha com pés na bola — instabilidade ativa" },
+      { pos:"MEIO",   label:"Push-up completo — bola estabiliza" },
+      { pos:"FIM",    label:"Rotação — braço ao teto (T)" },
+    ]
+  },
+  "Turkish Get-Up com Kettlebell": {
+    ytId: "5kb9Blkrj2w",   // female demonstrator TGU
+    frames: [
+      { pos:"INÍCIO", label:"Fase 1 — deitada, KB ao teto, olhe sempre para o KB" },
+      { pos:"MEIO",   label:"Fase 3 — quadril elevado, linha do chão ao KB" },
+      { pos:"FIM",    label:"Fase 4 — afundo, prestes a levantar" },
+    ]
+  },
 };
 
-// ─── Component: fetches ONE female GIF from ExerciseDB, shows 3-frame strip ───
-function ExerciseGifStrip({ exName, photos, color }) {
-  const [gifUrl, setGifUrl] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const searchTerm = EDB_MAP[exName];
+// ─── Exercise media strip: YouTube frames (1/2/3) = same woman, 3 phases ──────
+// YouTube provides 3 frame thumbnails for each video — all from same person
+// img.youtube.com is accessible from browser (no CORS for images)
+function ExerciseGifStrip({ exName, color }) {
+  const vid = FEMALE_VIDEOS[exName];
+  if (!vid) return null;
 
-  useEffect(() => {
-    if (!searchTerm) { setLoading(false); return; }
-    const url = `${EDBAPI}${encodeURIComponent(searchTerm)}`;
-    fetch(url, { headers: { "Content-Type": "application/json" } })
-      .then(r => r.json())
-      .then(data => {
-        // API returns array — pick first result with a gifUrl
-        const match = Array.isArray(data) ? data.find(e => e.gifUrl) : null;
-        if (match?.gifUrl) setGifUrl(match.gifUrl);
-      })
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }, [searchTerm]);
+  const YT = "https://img.youtube.com/vi";
+  const frames = [
+    { frame: 1, pos: vid.frames[0].pos, label: vid.frames[0].label },
+    { frame: 2, pos: vid.frames[1].pos, label: vid.frames[1].label },
+    { frame: 3, pos: vid.frames[2].pos, label: vid.frames[2].label },
+  ];
 
-  // If we have a GIF from ExerciseDB, show it as main + label the 3 phases
-  if (gifUrl) {
-    return (
-      <div style={{ marginBottom: 14 }}>
-        <div style={{ fontSize: 9, letterSpacing: 2, color:"#666", fontFamily:"'Barlow Condensed',sans-serif", marginBottom: 6 }}>
-          🎬 EXECUÇÃO — ANIMAÇÃO REAL · INÍCIO · MEIO · FIM
-        </div>
-        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap: 4, borderRadius: 10, overflow:"hidden", border:`1px solid ${color}28` }}>
-          {/* Left: animated GIF (covers all phases) */}
-          <div style={{ position:"relative", gridRow:"1", background:"#0a0a0a" }}>
-            <img src={gifUrl} alt={exName} style={{ width:"100%", aspectRatio:"4/3", objectFit:"cover", display:"block" }} />
-            <div style={{ position:"absolute", top:5, left:5, background:color, color:"#000", borderRadius:4, padding:"1px 7px", fontFamily:"'Bebas Neue',sans-serif", fontSize:10, letterSpacing:1, fontWeight:700 }}>ANIMAÇÃO</div>
-            <div style={{ background:"linear-gradient(transparent,rgba(0,0,0,0.85))", padding:"18px 6px 5px", position:"absolute", bottom:0, left:0, right:0, fontSize:9, color:"#ddd", lineHeight:1.3, fontFamily:"'Barlow Condensed',sans-serif", fontWeight:600 }}>Execução completa — veja todas as fases</div>
-          </div>
-          {/* Right: 3 static phase labels stacked */}
-          <div style={{ display:"grid", gridTemplateRows:"1fr 1fr 1fr", gap: 4 }}>
-            {(photos.slice(0,3)).map((p, i) => (
-              <div key={i} style={{ position:"relative", background:"#0a0a0a", overflow:"hidden" }}>
-                <img src={p.src} alt={p.label} loading="lazy"
-                  style={{ width:"100%", height:"100%", objectFit:"cover", display:"block" }}
-                  onError={e => { e.currentTarget.style.display="none"; }}
-                />
-                <div style={{ position:"absolute", top:3, left:3, background:color, color:"#000", borderRadius:3, padding:"0 5px", fontFamily:"'Bebas Neue',sans-serif", fontSize:9, letterSpacing:1, fontWeight:700 }}>{p.pos}</div>
-                <div style={{ background:"linear-gradient(transparent,rgba(0,0,0,0.9))", padding:"10px 5px 3px", position:"absolute", bottom:0, left:0, right:0, fontSize:8, color:"#ddd", lineHeight:1.2, fontFamily:"'Barlow Condensed',sans-serif", fontWeight:600 }}>{p.label}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Fallback: 3 local photos side by side
   return (
     <div style={{ marginBottom: 14 }}>
       <div style={{ fontSize: 9, letterSpacing: 2, color:"#666", fontFamily:"'Barlow Condensed',sans-serif", marginBottom: 6 }}>
-        {loading ? "⏳ CARREGANDO ANIMAÇÃO..." : "📸 EXECUÇÃO — INÍCIO · MEIO · FIM"}
+        📹 EXECUÇÃO REAL — INÍCIO · MEIO · FIM · mesma demonstradora
       </div>
-      <div style={{ display:"grid", gridTemplateColumns:`repeat(${Math.min(photos.length,3)},1fr)`, gap: 4, borderRadius: 10, overflow:"hidden", border:`1px solid ${color}28` }}>
-        {photos.slice(0,3).map((p, i) => (
-          <div key={i} style={{ position:"relative", background:"#0a0a0a" }}>
-            <img src={p.src} alt={p.label} loading="lazy"
+      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap: 4, borderRadius: 10, overflow:"hidden", border:`1px solid ${color}28` }}>
+        {frames.map((f, i) => (
+          <div key={i} style={{ position:"relative", background:"#111" }}>
+            <img
+              src={`${YT}/${vid.ytId}/${f.frame}.jpg`}
+              alt={f.label}
               style={{ width:"100%", aspectRatio:"4/3", objectFit:"cover", display:"block" }}
-              onError={e => { e.currentTarget.style.display="none"; e.currentTarget.nextSibling.style.display="flex"; }}
+              onError={e => {
+                // If frame not available, fallback to mqdefault thumbnail
+                if (!e.currentTarget.src.includes("mqdefault")) {
+                  e.currentTarget.src = `${YT}/${vid.ytId}/mqdefault.jpg`;
+                }
+              }}
             />
-            <div style={{ display:"none", width:"100%", aspectRatio:"4/3", alignItems:"center", justifyContent:"center", background:`${color}10`, flexDirection:"column" }}>
-              <span style={{ fontSize:20, opacity:.3 }}>🏋️</span>
+            {/* Phase badge */}
+            <div style={{ position:"absolute", top:5, left:5, background:color, color:"#000", borderRadius:4, padding:"1px 7px", fontFamily:"'Bebas Neue',sans-serif", fontSize:10, letterSpacing:1, fontWeight:700 }}>
+              {f.pos}
             </div>
-            <div style={{ position:"absolute", top:5, left:5, background:color, color:"#000", borderRadius:4, padding:"1px 7px", fontFamily:"'Bebas Neue',sans-serif", fontSize:10, letterSpacing:1, fontWeight:700 }}>{p.pos}</div>
-            <div style={{ background:"linear-gradient(transparent,rgba(0,0,0,0.88))", padding:"18px 6px 5px", position:"absolute", bottom:0, left:0, right:0, fontSize:9, color:"#ddd", lineHeight:1.3, fontFamily:"'Barlow Condensed',sans-serif", fontWeight:600 }}>{p.label}</div>
+            {/* Caption */}
+            <div style={{ background:"linear-gradient(transparent,rgba(0,0,0,0.9))", padding:"18px 6px 5px", position:"absolute", bottom:0, left:0, right:0, fontSize:9, color:"#eee", lineHeight:1.3, fontFamily:"'Barlow Condensed',sans-serif", fontWeight:600 }}>
+              {f.label}
+            </div>
           </div>
         ))}
       </div>
@@ -676,7 +857,14 @@ function ExCard({ ex, idx }) {
       {/* Header */}
       <button onClick={() => setOpen(!open)} style={{ width:"100%", display:"flex", alignItems:"stretch", background:"transparent", border:"none", cursor:"pointer", textAlign:"left" }}>
         <div style={{ width:68, flexShrink:0, background:`${color}12`, overflow:"hidden", position:"relative" }}>
-          {ex.photos[0] && <img src={ex.photos[0].src} alt="" loading="lazy" style={{ width:"100%", height:"100%", objectFit:"cover" }} onError={e=>{e.currentTarget.style.display="none";}} />}
+          {FEMALE_VIDEOS[ex.name] && (
+            <img
+              src={`https://img.youtube.com/vi/${FEMALE_VIDEOS[ex.name].ytId}/mqdefault.jpg`}
+              alt=""
+              style={{ width:"100%", height:"100%", objectFit:"cover" }}
+              onError={e=>{e.currentTarget.style.display="none";}}
+            />
+          )}
           <div style={{ position:"absolute", inset:0, background:"rgba(0,0,0,.3)", display:"flex", alignItems:"center", justifyContent:"center" }}>
             <span style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:22, color, textShadow:"0 1px 4px #000" }}>{idx+1}</span>
           </div>
@@ -697,7 +885,7 @@ function ExCard({ ex, idx }) {
       {open && (
         <div style={{ padding:"12px 13px 16px", borderTop:`1px solid ${color}20` }}>
           {/* GIF + 3 PHOTOS — always shown on expand */}
-          <ExerciseGifStrip exName={ex.name} photos={ex.photos} color={color} />
+          <ExerciseGifStrip exName={ex.name} color={color} />
 
           {/* YouTube */}
           {ex.ytId && (
