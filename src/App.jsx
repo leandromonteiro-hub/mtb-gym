@@ -1,10 +1,123 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
-// ─── All images served from /public/exercises/ (local, no CORS) ───────────────
-// 3 photos per exercise: START / MID / END
-// All exercises: dumbbells, bands, kettlebells, bodyweight, bosu, gym ball
-// All demonstrators: female
+// ─── ExerciseDB API — fetches animated GIFs with FEMALE demonstrators ──────────
+// API: https://exercisedb.dev/api/exercises/name/{name}
+// Returns gifUrl with animated female demonstrators (free, no key needed)
+// Local fallback images in /public/exercises/ used if API fails
+
 const E = "/exercises/";
+const EDBAPI = "https://exercisedb.dev/api/exercises/name/";
+
+// Map each exercise name to its ExerciseDB search term
+const EDB_MAP = {
+  "Cat-Cow (Gato-Vaca)":                              "cat cow",
+  "Hip 90/90 com Rotação de Tronco":                  "hip stretch",
+  "Dead Bug — Core Profundo":                         "dead bug",
+  "Glute Bridge com Bola de Pilates":                 "glute bridge",
+  "Romanian Deadlift com Halteres (RDL)":             "romanian deadlift",
+  "Bird Dog com Elástico":                            "bird dog",
+  "Hollow Body Hold":                                 "hollow body",
+  "Good Morning com Elástico":                        "good morning",
+  "Pallof Press com Elástico":                        "pallof press",
+  "Superman Alternado com Pausa":                     "superman",
+  "World's Greatest Stretch":                         "world greatest stretch",
+  "Lateral Band Walk — Glúteo Médio":                 "lateral band walk",
+  "Leg Swing — Frontal e Lateral":                    "leg swing",
+  "Goblet Squat de Ativação":                         "goblet squat",
+  "Split Squat com Halteres (Búlgaro)":               "bulgarian split squat",
+  "Step Up com Halteres e Pausa":                     "dumbbell step up",
+  "Single Leg Deadlift com Kettlebell":               "single leg deadlift",
+  "Lateral Lunge com Kettlebell":                     "lateral lunge",
+  "Equilíbrio Unipodal no Bosu":                      "single leg squat",
+  "Skater Squat — Posição de Descida MTB":            "skater squat",
+  "Shoulder CARs — Mobilidade Ativa":                 "shoulder circles",
+  "Band Pull Apart — Ativação Escapular":             "band pull apart",
+  "Calf Raise com Elástico na Borda":                 "calf raise",
+  "Inchworm com Push-Up":                             "inchworm",
+  "Face Pull com Elástico — Saúde do Ombro":         "face pull",
+  "Thread the Needle — Rotação Torácica":             "thread the needle",
+  "Renegade Row com Kettlebell":                      "renegade row",
+  "Calf Raise Unipodal Excêntrico na Borda":         "single leg calf raise",
+  "Push-Up na Bola com Rotação (T Push-Up)":         "push up rotation",
+  "Turkish Get-Up com Kettlebell":                    "turkish get up",
+};
+
+// ─── Component: fetches ONE female GIF from ExerciseDB, shows 3-frame strip ───
+function ExerciseGifStrip({ exName, photos, color }) {
+  const [gifUrl, setGifUrl] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const searchTerm = EDB_MAP[exName];
+
+  useEffect(() => {
+    if (!searchTerm) { setLoading(false); return; }
+    const url = `${EDBAPI}${encodeURIComponent(searchTerm)}`;
+    fetch(url, { headers: { "Content-Type": "application/json" } })
+      .then(r => r.json())
+      .then(data => {
+        // API returns array — pick first result with a gifUrl
+        const match = Array.isArray(data) ? data.find(e => e.gifUrl) : null;
+        if (match?.gifUrl) setGifUrl(match.gifUrl);
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, [searchTerm]);
+
+  // If we have a GIF from ExerciseDB, show it as main + label the 3 phases
+  if (gifUrl) {
+    return (
+      <div style={{ marginBottom: 14 }}>
+        <div style={{ fontSize: 9, letterSpacing: 2, color:"#666", fontFamily:"'Barlow Condensed',sans-serif", marginBottom: 6 }}>
+          🎬 EXECUÇÃO — ANIMAÇÃO REAL · INÍCIO · MEIO · FIM
+        </div>
+        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap: 4, borderRadius: 10, overflow:"hidden", border:`1px solid ${color}28` }}>
+          {/* Left: animated GIF (covers all phases) */}
+          <div style={{ position:"relative", gridRow:"1", background:"#0a0a0a" }}>
+            <img src={gifUrl} alt={exName} style={{ width:"100%", aspectRatio:"4/3", objectFit:"cover", display:"block" }} />
+            <div style={{ position:"absolute", top:5, left:5, background:color, color:"#000", borderRadius:4, padding:"1px 7px", fontFamily:"'Bebas Neue',sans-serif", fontSize:10, letterSpacing:1, fontWeight:700 }}>ANIMAÇÃO</div>
+            <div style={{ background:"linear-gradient(transparent,rgba(0,0,0,0.85))", padding:"18px 6px 5px", position:"absolute", bottom:0, left:0, right:0, fontSize:9, color:"#ddd", lineHeight:1.3, fontFamily:"'Barlow Condensed',sans-serif", fontWeight:600 }}>Execução completa — veja todas as fases</div>
+          </div>
+          {/* Right: 3 static phase labels stacked */}
+          <div style={{ display:"grid", gridTemplateRows:"1fr 1fr 1fr", gap: 4 }}>
+            {(photos.slice(0,3)).map((p, i) => (
+              <div key={i} style={{ position:"relative", background:"#0a0a0a", overflow:"hidden" }}>
+                <img src={p.src} alt={p.label} loading="lazy"
+                  style={{ width:"100%", height:"100%", objectFit:"cover", display:"block" }}
+                  onError={e => { e.currentTarget.style.display="none"; }}
+                />
+                <div style={{ position:"absolute", top:3, left:3, background:color, color:"#000", borderRadius:3, padding:"0 5px", fontFamily:"'Bebas Neue',sans-serif", fontSize:9, letterSpacing:1, fontWeight:700 }}>{p.pos}</div>
+                <div style={{ background:"linear-gradient(transparent,rgba(0,0,0,0.9))", padding:"10px 5px 3px", position:"absolute", bottom:0, left:0, right:0, fontSize:8, color:"#ddd", lineHeight:1.2, fontFamily:"'Barlow Condensed',sans-serif", fontWeight:600 }}>{p.label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Fallback: 3 local photos side by side
+  return (
+    <div style={{ marginBottom: 14 }}>
+      <div style={{ fontSize: 9, letterSpacing: 2, color:"#666", fontFamily:"'Barlow Condensed',sans-serif", marginBottom: 6 }}>
+        {loading ? "⏳ CARREGANDO ANIMAÇÃO..." : "📸 EXECUÇÃO — INÍCIO · MEIO · FIM"}
+      </div>
+      <div style={{ display:"grid", gridTemplateColumns:`repeat(${Math.min(photos.length,3)},1fr)`, gap: 4, borderRadius: 10, overflow:"hidden", border:`1px solid ${color}28` }}>
+        {photos.slice(0,3).map((p, i) => (
+          <div key={i} style={{ position:"relative", background:"#0a0a0a" }}>
+            <img src={p.src} alt={p.label} loading="lazy"
+              style={{ width:"100%", aspectRatio:"4/3", objectFit:"cover", display:"block" }}
+              onError={e => { e.currentTarget.style.display="none"; e.currentTarget.nextSibling.style.display="flex"; }}
+            />
+            <div style={{ display:"none", width:"100%", aspectRatio:"4/3", alignItems:"center", justifyContent:"center", background:`${color}10`, flexDirection:"column" }}>
+              <span style={{ fontSize:20, opacity:.3 }}>🏋️</span>
+            </div>
+            <div style={{ position:"absolute", top:5, left:5, background:color, color:"#000", borderRadius:4, padding:"1px 7px", fontFamily:"'Bebas Neue',sans-serif", fontSize:10, letterSpacing:1, fontWeight:700 }}>{p.pos}</div>
+            <div style={{ background:"linear-gradient(transparent,rgba(0,0,0,0.88))", padding:"18px 6px 5px", position:"absolute", bottom:0, left:0, right:0, fontSize:9, color:"#ddd", lineHeight:1.3, fontFamily:"'Barlow Condensed',sans-serif", fontWeight:600 }}>{p.label}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 const TRAININGS_META = [
   { id:"A", icon:"⚡", color:"#4ade80", label:"TREINO A", sub:"Core · Cadeia Posterior · Lombar",    duration:"45–55 min", mtbLink:"Subidas longas, postura no pedal, prevenção de lombar" },
@@ -552,35 +665,7 @@ const PROG_DATA = [
   { weeks:"7–8", phase:"CONSOLIDAÇÃO",  color:"#c084fc", series:"3–4",repsTime:"15–20 / 60s", rest:"30s",    load:"Moderada-Alta",  goal:"Integração neuromuscular. Máxima qualidade com o maior volume do programa." },
 ];
 
-// ─── Photo Strip — 3 photos ALWAYS visible ───────────────────────────────────
-function PhotoStrip({ photos, color }) {
-  if (!photos || photos.length === 0) return null;
-  return (
-    <div style={{ marginBottom: 14 }}>
-      <div style={{ fontSize: 9, letterSpacing: 2, color:"#666", fontFamily:"'Barlow Condensed',sans-serif", marginBottom: 6 }}>
-        📸 EXECUÇÃO — INÍCIO · MEIO · FIM
-      </div>
-      <div style={{ display:"grid", gridTemplateColumns:`repeat(${photos.length},1fr)`, gap: 4, borderRadius: 10, overflow:"hidden", border:`1px solid ${color}28` }}>
-        {photos.map((p, i) => (
-          <div key={i} style={{ position:"relative", background:"#0a0a0a" }}>
-            <img
-              src={p.src} alt={p.label} loading="lazy"
-              style={{ width:"100%", aspectRatio:"4/3", objectFit:"cover", display:"block" }}
-              onError={e => { e.currentTarget.style.display="none"; e.currentTarget.nextSibling.style.display="flex"; }}
-            />
-            <div style={{ display:"none", width:"100%", aspectRatio:"4/3", alignItems:"center", justifyContent:"center", background:`${color}10`, flexDirection:"column", gap: 4 }}>
-              <span style={{ fontSize:24, opacity:.3 }}>🏋️</span>
-            </div>
-            {/* Position badge */}
-            <div style={{ position:"absolute", top:5, left:5, background:color, color:"#000", borderRadius:4, padding:"1px 7px", fontFamily:"'Bebas Neue',sans-serif", fontSize:10, letterSpacing:1, fontWeight:700 }}>{p.pos}</div>
-            {/* Caption */}
-            <div style={{ background:"linear-gradient(transparent,rgba(0,0,0,0.88))", padding:"18px 6px 5px", position:"absolute", bottom:0, left:0, right:0, fontSize:9, color:"#ddd", lineHeight:1.3, fontFamily:"'Barlow Condensed',sans-serif", fontWeight:600 }}>{p.label}</div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
+// PhotoStrip replaced by ExerciseGifStrip above
 
 // ─── Exercise Card ─────────────────────────────────────────────────────────────
 function ExCard({ ex, idx }) {
@@ -602,7 +687,7 @@ function ExCard({ ex, idx }) {
             {ex.sets && <span style={{color}}>{ex.sets}</span>}
             {ex.rest && <span>↩ {ex.rest}</span>}
             {ex.dur && <span style={{color}}>{ex.dur}</span>}
-            {ex.ytId && <span style={{color:"#ff5555"}}>▶ vídeo mulheres</span>}
+            {ex.ytId && <span style={{color:"#ff5555"}}>▶ vídeo</span>}
           </div>
         </div>
         <div style={{ padding:"0 12px", display:"flex", alignItems:"center", color:open?color:"#444", fontSize:18, transition:"transform .2s", transform:open?"rotate(180deg)":"rotate(0)" }}>⌄</div>
@@ -611,14 +696,14 @@ function ExCard({ ex, idx }) {
       {/* Expanded */}
       {open && (
         <div style={{ padding:"12px 13px 16px", borderTop:`1px solid ${color}20` }}>
-          {/* 3 PHOTOS — always shown */}
-          <PhotoStrip photos={ex.photos} color={color} />
+          {/* GIF + 3 PHOTOS — always shown on expand */}
+          <ExerciseGifStrip exName={ex.name} photos={ex.photos} color={color} />
 
           {/* YouTube */}
           {ex.ytId && (
             <a href={`https://www.youtube.com/watch?v=${ex.ytId}`} target="_blank" rel="noopener noreferrer"
               style={{ display:"inline-flex", alignItems:"center", gap:6, background:"#ff000015", border:"1px solid #ff000040", borderRadius:7, padding:"6px 12px", marginBottom:12, textDecoration:"none", color:"#ff6666", fontFamily:"'Barlow Condensed',sans-serif", fontSize:11, fontWeight:700 }}>
-              <span>▶</span> TUTORIAL EM VÍDEO ↗
+              <span>▶</span> VER TUTORIAL ↗
             </a>
           )}
 
