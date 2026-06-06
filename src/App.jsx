@@ -250,6 +250,84 @@ const FEMALE_VIDEOS = {
       { pos:"FIM",    label:"Fase 4 — afundo, prestes a levantar" },
     ]
   },
+
+  // ── COOLDOWN A ────────────────────────────────────────────────────────────────
+  "Pigeon Pose (Pombo)": {
+    ytId: "46phRH_09yM",   // How to do PIGEON Pose for beginners - female physiotherapist
+    frames: [
+      { pos:"INÍCIO", label:"4 apoios — joelho avança para frente" },
+      { pos:"MEIO",   label:"Posicionando — canela diagonal, quadril nivelado" },
+      { pos:"FIM",    label:"Afundando — tronco inclinado à frente (60s)" },
+    ]
+  },
+  "Alongamento de Isquiotibiais em Pé": {
+    ytId: "UIRTPXj1Q1U",   // 10 Min Lower Body Stretch - female demonstrator
+    frames: [
+      { pos:"INÍCIO", label:"Em pé — calcanhar na superfície elevada" },
+      { pos:"MEIO",   label:"Inclinando — coluna reta, sem arredondar" },
+      { pos:"FIM",    label:"Profundo — puxe a ponta do pé em sua direção" },
+    ]
+  },
+  "Respiração Diafragmática": {
+    ytId: "kqnua4rHVVA",   // calm female breathing demo
+    frames: [
+      { pos:"INÍCIO", label:"Deitada — mão no peito, outra no abdômen" },
+      { pos:"MEIO",   label:"Inspirando 4s — abdômen sobe primeiro" },
+      { pos:"FIM",    label:"Expirando 6s — abdômen desce, relaxe tudo" },
+    ]
+  },
+
+  // ── COOLDOWN B ────────────────────────────────────────────────────────────────
+  "Couch Stretch — Flexor do Quadril": {
+    ytId: "UIRTPXj1Q1U",   // 10 Min Lower Body Stretch routine - female
+    frames: [
+      { pos:"INÍCIO", label:"Joelho no chão — pé traseiro na parede" },
+      { pos:"MEIO",   label:"Pé da frente avança — joelho a 90°" },
+      { pos:"FIM",    label:"Glúteo apertado — quadril avança suavemente" },
+    ]
+  },
+  "Adductor Rockback na Bola": {
+    ytId: "gwWv7aPcD88",   // female demonstrator lateral lunge / adductor
+    frames: [
+      { pos:"INÍCIO", label:"4 apoios — joelho abre lateralmente" },
+      { pos:"MEIO",   label:"Rockback — quadril recua, virilha abre" },
+      { pos:"FIM",    label:"Profundo — estiramento máximo na virilha" },
+    ]
+  },
+  "Calf Stretch com Elástico": {
+    ytId: "D7KaRcUTQeE",   // female demonstrator calf stretch / raise
+    frames: [
+      { pos:"INÍCIO", label:"Antepé na parede — calcanhar no chão" },
+      { pos:"MEIO",   label:"Joelho estendido — gastrocnêmio (P1)" },
+      { pos:"FIM",    label:"Joelho dobrado — sóleo e Aquiles (P2)" },
+    ]
+  },
+
+  // ── COOLDOWN C ────────────────────────────────────────────────────────────────
+  "Chest Stretch na Bola de Pilates": {
+    ytId: "AlTGQrDOd98",   // female demonstrator shoulder/chest opener
+    frames: [
+      { pos:"INÍCIO", label:"Apoio lateral na bola — braço ao lado" },
+      { pos:"MEIO",   label:"Reclinando — peito começa a abrir" },
+      { pos:"FIM",    label:"Abertura completa — peitoral e ombro anterior" },
+    ]
+  },
+  "Thoracic Extension na Bola de Pilates": {
+    ytId: "LlDNef_Ztsc",   // female demonstrator thoracic mobility
+    frames: [
+      { pos:"INÍCIO", label:"Sentada na bola — posição inicial" },
+      { pos:"MEIO",   label:"Reclinando suavemente sobre a bola" },
+      { pos:"FIM",    label:"Extensão torácica completa — respire fundo" },
+    ]
+  },
+  "4-7-8 Respiração — Recuperação Avançada": {
+    ytId: "kqnua4rHVVA",   // calm breathing female
+    frames: [
+      { pos:"INÍCIO", label:"Deitada confortavelmente — corpo relaxado" },
+      { pos:"MEIO",   label:"Inspirando 4s — segure 7s" },
+      { pos:"FIM",    label:"Expirando 8s pela boca — calma profunda" },
+    ]
+  },
 };
 
 // ─── Exercise media strip: YouTube frames (1/2/3) = same woman, 3 phases ──────
