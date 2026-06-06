@@ -330,46 +330,40 @@ const FEMALE_VIDEOS = {
   },
 };
 
-// ─── Exercise media strip: YouTube frames (1/2/3) = same woman, 3 phases ──────
-// YouTube provides 3 frame thumbnails for each video — all from same person
-// img.youtube.com is accessible from browser (no CORS for images)
+// ─── Exercise image strip: 2 clean frames — START and END position ────────────
 function ExerciseGifStrip({ exName, color }) {
   const vid = FEMALE_VIDEOS[exName];
   if (!vid) return null;
 
   const YT = "https://img.youtube.com/vi";
-  const frames = [
-    { frame: 1, pos: vid.frames[0].pos, label: vid.frames[0].label },
-    { frame: 2, pos: vid.frames[1].pos, label: vid.frames[1].label },
-    { frame: 3, pos: vid.frames[2].pos, label: vid.frames[2].label },
+  // frame 1 = start position, frame 3 = end position
+  const pairs = [
+    { frame: 1, label: vid.frames[0].label, badge: "POSIÇÃO INICIAL" },
+    { frame: 3, label: vid.frames[2].label, badge: "POSIÇÃO FINAL"   },
   ];
 
   return (
-    <div style={{ marginBottom: 14 }}>
-      <div style={{ fontSize: 9, letterSpacing: 2, color:"#666", fontFamily:"'Barlow Condensed',sans-serif", marginBottom: 6 }}>
-        📹 EXECUÇÃO REAL — INÍCIO · MEIO · FIM · mesma demonstradora
-      </div>
-      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap: 4, borderRadius: 10, overflow:"hidden", border:`1px solid ${color}28` }}>
-        {frames.map((f, i) => (
-          <div key={i} style={{ position:"relative", background:"#111" }}>
+    <div style={{ marginBottom: 16 }}>
+      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap: 6 }}>
+        {pairs.map((p, i) => (
+          <div key={i} style={{ borderRadius: 10, overflow:"hidden", background:"#111", position:"relative", border:`1px solid ${color}22` }}>
             <img
-              src={`${YT}/${vid.ytId}/${f.frame}.jpg`}
-              alt={f.label}
-              style={{ width:"100%", aspectRatio:"4/3", objectFit:"cover", display:"block" }}
+              src={`${YT}/${vid.ytId}/${p.frame}.jpg`}
+              alt={p.label}
+              style={{ width:"100%", aspectRatio:"16/9", objectFit:"cover", display:"block" }}
               onError={e => {
-                // If frame not available, fallback to mqdefault thumbnail
                 if (!e.currentTarget.src.includes("mqdefault")) {
                   e.currentTarget.src = `${YT}/${vid.ytId}/mqdefault.jpg`;
                 }
               }}
             />
-            {/* Phase badge */}
-            <div style={{ position:"absolute", top:5, left:5, background:color, color:"#000", borderRadius:4, padding:"1px 7px", fontFamily:"'Bebas Neue',sans-serif", fontSize:10, letterSpacing:1, fontWeight:700 }}>
-              {f.pos}
+            {/* Badge top */}
+            <div style={{ position:"absolute", top:8, left:8, background: i===0 ? "#222" : color, color: i===0 ? "#aaa" : "#000", borderRadius:5, padding:"2px 9px", fontFamily:"'Bebas Neue',sans-serif", fontSize:11, letterSpacing:1.5, fontWeight:700 }}>
+              {p.badge}
             </div>
-            {/* Caption */}
-            <div style={{ background:"linear-gradient(transparent,rgba(0,0,0,0.9))", padding:"18px 6px 5px", position:"absolute", bottom:0, left:0, right:0, fontSize:9, color:"#eee", lineHeight:1.3, fontFamily:"'Barlow Condensed',sans-serif", fontWeight:600 }}>
-              {f.label}
+            {/* Caption bottom */}
+            <div style={{ background:"linear-gradient(transparent,rgba(0,0,0,0.85))", padding:"22px 10px 8px", position:"absolute", bottom:0, left:0, right:0, fontSize:10, color:"#eee", lineHeight:1.4, fontFamily:"'Barlow Condensed',sans-serif", fontWeight:600 }}>
+              {p.label}
             </div>
           </div>
         ))}
@@ -739,7 +733,7 @@ function ExCard({ ex, idx }) {
     <div style={{ background: open?"#0c0c16":"#0a0a13", border:`1px solid ${open?color+"50":"#ffffff0c"}`, borderRadius:12, overflow:"hidden", transition:"all 0.2s" }}>
       {/* Header */}
       <button onClick={() => setOpen(!open)} style={{ width:"100%", display:"flex", alignItems:"stretch", background:"transparent", border:"none", cursor:"pointer", textAlign:"left" }}>
-        <div style={{ width:68, flexShrink:0, background:`${color}12`, overflow:"hidden", position:"relative" }}>
+        <div style={{ width:80, flexShrink:0, background:`${color}12`, overflow:"hidden", position:"relative" }}>
           {FEMALE_VIDEOS[ex.name] && (
             <img
               src={`https://img.youtube.com/vi/${FEMALE_VIDEOS[ex.name].ytId}/mqdefault.jpg`}
