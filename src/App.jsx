@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { ART, ART_MAP } from "./ExerciseArt.jsx";
 
 // ─── FEMALE EXERCISE VIDEOS ────────────────────────────────────────────────────
 // Each entry: { ytId, frames: [{pos, label}×3] }
@@ -330,39 +331,32 @@ const FEMALE_VIDEOS = {
   },
 };
 
-// ─── Exercise image strip: 2 clean frames — START and END position ────────────
+// ─── Exercise illustration strip: 2 clean SVG diagrams — START and END ────────
 function ExerciseGifStrip({ exName, color }) {
-  const vid = FEMALE_VIDEOS[exName];
-  if (!vid) return null;
+  const artKey = ART_MAP[exName];
+  const art = artKey && ART[artKey] ? ART[artKey](color) : null;
+  if (!art) return null;
 
-  const YT = "https://img.youtube.com/vi";
-  // frame 1 = start position, frame 3 = end position
   const pairs = [
-    { frame: 1, label: vid.frames[0].label, badge: "POSIÇÃO INICIAL" },
-    { frame: 3, label: vid.frames[2].label, badge: "POSIÇÃO FINAL"   },
+    { svg: art.start, label: art.startLabel, badge: "POSIÇÃO INICIAL", filled: false },
+    { svg: art.end,   label: art.endLabel,   badge: "POSIÇÃO FINAL",   filled: true  },
   ];
 
   return (
     <div style={{ marginBottom: 16 }}>
-      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap: 6 }}>
+      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap: 8 }}>
         {pairs.map((p, i) => (
-          <div key={i} style={{ borderRadius: 10, overflow:"hidden", background:"#111", position:"relative", border:`1px solid ${color}22` }}>
-            <img
-              src={`${YT}/${vid.ytId}/${p.frame}.jpg`}
-              alt={p.label}
-              style={{ width:"100%", aspectRatio:"16/9", objectFit:"cover", display:"block" }}
-              onError={e => {
-                if (!e.currentTarget.src.includes("mqdefault")) {
-                  e.currentTarget.src = `${YT}/${vid.ytId}/mqdefault.jpg`;
-                }
-              }}
-            />
+          <div key={i} style={{ borderRadius: 12, overflow:"hidden", background:"#0f0f17", position:"relative", border:`1px solid ${color}33` }}>
+            {/* SVG illustration */}
+            <div style={{ color }}>
+              {p.svg}
+            </div>
             {/* Badge top */}
-            <div style={{ position:"absolute", top:8, left:8, background: i===0 ? "#222" : color, color: i===0 ? "#aaa" : "#000", borderRadius:5, padding:"2px 9px", fontFamily:"'Bebas Neue',sans-serif", fontSize:11, letterSpacing:1.5, fontWeight:700 }}>
+            <div style={{ position:"absolute", top:8, left:8, background: p.filled ? color : "#1a1a26", color: p.filled ? "#000" : color, borderRadius:5, padding:"2px 9px", fontFamily:"'Bebas Neue',sans-serif", fontSize:11, letterSpacing:1.5, fontWeight:700, border: p.filled ? "none" : `1px solid ${color}44` }}>
               {p.badge}
             </div>
             {/* Caption bottom */}
-            <div style={{ background:"linear-gradient(transparent,rgba(0,0,0,0.85))", padding:"22px 10px 8px", position:"absolute", bottom:0, left:0, right:0, fontSize:10, color:"#eee", lineHeight:1.4, fontFamily:"'Barlow Condensed',sans-serif", fontWeight:600 }}>
+            <div style={{ padding:"8px 10px", fontSize:10.5, color:"#bbb", lineHeight:1.35, fontFamily:"'Barlow Condensed',sans-serif", fontWeight:600, borderTop:`1px solid ${color}15`, minHeight: 44 }}>
               {p.label}
             </div>
           </div>
@@ -733,18 +727,9 @@ function ExCard({ ex, idx }) {
     <div style={{ background: open?"#0c0c16":"#0a0a13", border:`1px solid ${open?color+"50":"#ffffff0c"}`, borderRadius:12, overflow:"hidden", transition:"all 0.2s" }}>
       {/* Header */}
       <button onClick={() => setOpen(!open)} style={{ width:"100%", display:"flex", alignItems:"stretch", background:"transparent", border:"none", cursor:"pointer", textAlign:"left" }}>
-        <div style={{ width:80, flexShrink:0, background:`${color}12`, overflow:"hidden", position:"relative" }}>
-          {FEMALE_VIDEOS[ex.name] && (
-            <img
-              src={`https://img.youtube.com/vi/${FEMALE_VIDEOS[ex.name].ytId}/mqdefault.jpg`}
-              alt=""
-              style={{ width:"100%", height:"100%", objectFit:"cover" }}
-              onError={e=>{e.currentTarget.style.display="none";}}
-            />
-          )}
-          <div style={{ position:"absolute", inset:0, background:"rgba(0,0,0,.3)", display:"flex", alignItems:"center", justifyContent:"center" }}>
-            <span style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:22, color, textShadow:"0 1px 4px #000" }}>{idx+1}</span>
-          </div>
+        <div style={{ width:80, flexShrink:0, background:"#0f0f17", overflow:"hidden", position:"relative", color, display:"flex", alignItems:"center" }}>
+          {ART_MAP[ex.name] && ART[ART_MAP[ex.name]] && ART[ART_MAP[ex.name]](color).start}
+          <div style={{ position:"absolute", top:4, left:4, background:color, color:"#000", width:18, height:18, borderRadius:"50%", display:"flex", alignItems:"center", justifyContent:"center", fontFamily:"'Bebas Neue',sans-serif", fontSize:12, fontWeight:700 }}>{idx+1}</div>
         </div>
         <div style={{ flex:1, padding:"9px 12px", display:"flex", flexDirection:"column", justifyContent:"center" }}>
           <div style={{ fontFamily:"'Barlow Condensed',sans-serif", fontWeight:700, fontSize:14, color:"#fff", lineHeight:1.2 }}>{ex.name}</div>
@@ -886,7 +871,7 @@ export default function App() {
             </div>
 
             <div style={{ background:"#ffffff04", borderRadius:7, padding:"6px 12px", fontSize:10, color:"#555", marginBottom:10 }}>
-              Clique em cada exercício para expandir · 3 fotos reais de execução sempre visíveis · Equipamentos: halteres, elásticos, bosu, gym ball, kettlebell, peso corporal
+              Clique em cada exercício para ver as posições inicial e final, instruções e vídeo · Equipamentos: halteres, elásticos, bosu, gym ball, kettlebell, peso corporal
             </div>
 
             <div style={{ display:"grid", gap:8 }}>
